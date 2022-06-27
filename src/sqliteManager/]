@@ -1,0 +1,96 @@
+#include"manager.h"
+
+// definition of "private" functions so that other functions can see them
+static void printHello();
+
+bool createDatabase(databaseManager** dbManager){
+  
+  sqlite3* db;
+  
+  databaseManager* temp = *dbManager;
+ 
+  // creating the directory where the db will be created
+
+  char *tempStringForDir = malloc(strlen(temp->parentDirectory)+strlen(temp->folder));
+ 
+  strcat(tempStringForDir, temp->parentDirectory);
+  strcat(tempStringForDir, temp->folder);
+  
+  struct stat st = {0};
+  if(stat(tempStringForDir, &st) == -1){
+    mkdir(tempStringForDir, 0700);
+  }
+
+  char *dirToCreateDBIn = malloc(strlen(tempStringForDir) + strlen(temp->name)); 
+  strcat(dirToCreateDBIn, tempStringForDir);
+  strcat(dirToCreateDBIn, temp->name);
+  short int exit = 0;
+  
+  exit = sqlite3_open(dirToCreateDBIn, &db);
+  sqlite3_close(db);
+
+  free(tempStringForDir);
+  free(dirToCreateDBIn);
+
+  if(exit != SQLITE_OK){
+    return DB_FAIL;
+  }
+  
+  return DB_SUCCESS;
+}
+
+bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager){
+  
+  sqlite3 *db;
+  databaseManager *temp = *dbManager;
+  
+  char *tmp_dirWhereDbIsSaved = malloc(strlen(temp->parentDirectory) + strlen(temp->folder) + strlen(temp->name));
+  memset(tmp_dirWhereDbIsSaved, 0, (strlen(temp->parentDirectory) + strlen(temp->folder) + strlen(temp->name)))
+  strcat(tmp_dirWhereDbIsSaved, temp->parentDirectory);
+  printf("'\nPRIMO STADIO: %s", tmp_dirWhereDbIsSaved);
+  strcat(tmp_dirWhereDbIsSaved, temp->folder);
+  printf("'\nSECONDO STADIO: %s", tmp_dirWhereDbIsSaved);
+  strcat(tmp_dirWhereDbIsSaved, temp->name);
+  printf("\nTERZO STADIO: %s\n", tmp_dirWhereDbIsSaved);
+  
+  short int exit = 0;
+  exit = sqlite3_open(tmp_dirWhereDbIsSaved, &db);
+  
+  short int totalLength = 0;
+  for(short int i = 0; i < sizeOfArray; ++i){
+    totalLength += strlen(colAndTypes[i]);    
+  }
+  
+  char* sqlInstructionStartingPoint = "CREATE TABLE IF NOT EXISTS";
+  // char* sqlInstruction = malloc(strlen(tableName) + totalLength + strlen(sqlInstructionStartingPoint) + 2 + (sizeOfArray - 1)); // 2 = number of parenthesis, sizeOfArray - 1 is the number of commas we need
+  char* sqlInstruction = malloc(100*sizeof(char));
+
+  printf("byte allocati: %ld", strlen(sqlInstruction)); 
+  
+  strcat(sqlInstruction, sqlInstructionStartingPoint);
+  strcat(sqlInstruction, tableName);
+  strcat(sqlInstruction, "(");
+  for(short int i = 0; i < sizeOfArray; ++i){
+    strcat(sqlInstruction, colAndTypes[i]);
+    if(i != sizeOfArray - 1){
+      strcat(sqlInstruction, ",");
+    }
+  }
+  strcat(sqlInstruction, ");");
+  printf("\nISTRUZIONE SQL: %s", sqlInstruction); 
+  printf("\nStrlen dell'affare: %ld\n", strlen(sqlInstruction));
+  
+  sqlite3_close(db);
+  
+  free(tmp_dirWhereDbIsSaved);
+  free(sqlInstruction);
+  
+  return DB_SUCCESS;
+}
+
+// actual developing of "private" functions
+static void printHello(){
+  
+  // do something
+
+}
