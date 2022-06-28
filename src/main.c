@@ -1,6 +1,8 @@
 #include<stdio.h>
 #include<stdlib.h>
 #include"sqliteManager/manager.h"
+#include"sensorTypes/sensorTypes.h"
+
 
 #define NUMBER_OF_COLUMNS 2
 
@@ -10,6 +12,9 @@ int main(){
   // creating db struct
   databaseManager dbManager = {"/database.db", getenv("HOME"), "/NetAtmoOpenSourceUtilities"};
   databaseManager *ptr_dbManager = &dbManager;
+  
+  measurements m = {"ciao", 12.5, 15.5, 123};
+  measurements *ptr_m = &m;
 
   bool exit;
 
@@ -23,6 +28,6 @@ int main(){
   
   printf("%s", exit ? "Table created successfully\n" : "Something went wrong while creating the table\n");
   
-
+  insertIntoDbAndSave(" tavolaDiProva ", columnsAndTypes, &ptr_m, &ptr_dbManager);
   return 0;
 }

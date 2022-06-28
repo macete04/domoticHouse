@@ -10,6 +10,8 @@
 #include<string.h>
 #include<errno.h>
 
+#include"../sensorTypes/sensorTypes.h"
+
 typedef struct databaseManager{
   
   char* name;
@@ -24,8 +26,9 @@ enum DBState{
 };
 
 bool createDatabase(databaseManager** dbManager);
-bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
 
+bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
+bool insertIntoDbAndSave(char* tableToSaveTo, char** colAndTypes, measurements** measurementsToSave, databaseManager** dbManager);
 
 
 #endif

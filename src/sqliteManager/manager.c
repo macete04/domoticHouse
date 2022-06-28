@@ -107,6 +107,62 @@ bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, dat
   return DB_SUCCESS;
 }
 
+bool insertIntoDbAndSave(char* tableToSaveTo, char** colAndTypes, measurements** measurementsToSave, databaseManager** dbManager){
+  
+  // sqlite3* db;
+  // databaseManager* tmp_dbManager = *dbManager;
+  measurements* tmp_measurementsToSave = *measurementsToSave;
+
+  const char* SQL_INSTRUCTION_STARTING_POINT = "INSERT INTO";
+  const char* VALUES_STRING = "VALUES";
+  
+  char* tmp_temperature = malloc(sizeof(double));
+  char* tmp_humidity = malloc(sizeof(double));
+  char* tmp_co2 = malloc(sizeof(int));
+  
+  // inserting data in strings so that i can insert them in the main sql instruction
+  snprintf(tmp_temperature, sizeof(double), "%f", tmp_measurementsToSave->temperature);
+  snprintf(tmp_humidity, sizeof(double), "%f", tmp_measurementsToSave->humidity);
+  snprintf(tmp_co2, sizeof(int), "%d", tmp_measurementsToSave->ppmCo2);
+
+  short int sqlInstructionLength = strlen(SQL_INSTRUCTION_STARTING_POINT) 
+    + strlen(tableToSaveTo) 
+    + strlen(VALUES_STRING) 
+    + strlen(tmp_measurementsToSave->dateAndHour)
+    + (2*(short int)sizeof(double))
+    + (short int)sizeof(int)
+    + 4 + 2 + 6; // in order: number of commas between values and the semicolon at the end of the statement, number of parenthesis, number of ' used
+  
+  char* sqlInstruction = malloc(sqlInstructionLength);
+  
+  // cleaning memory
+  memset(sqlInstruction, 0, sqlInstructionLength);
+  
+  // creating the string
+  strcat(sqlInstruction, SQL_INSTRUCTION_STARTING_POINT);
+  strcat(sqlInstruction, tableToSaveTo);
+  strcat(sqlInstruction, VALUES_STRING);
+  strcat(sqlInstruction, "(");
+  strcat(sqlInstruction, tmp_measurementsToSave->dateAndHour);
+  strcat(sqlInstruction, ",");
+  strcat(sqlInstruction, tmp_temperature);
+  strcat(sqlInstruction, ",");
+  strcat(sqlInstruction, tmp_humidity);
+  strcat(sqlInstruction, ",");
+  strcat(sqlInstruction, tmp_co2);
+  strcat(sqlInstruction, ");");
+  
+  printf("%s\n", sqlInstruction);
+   
+  free(tmp_temperature);
+  free(tmp_humidity);
+  free(tmp_co2);
+  free(sqlInstruction);
+
+
+  return true;
+}
+
 // actual developing of "private" functions
 static void printHello(){
   
