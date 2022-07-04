@@ -26,7 +26,6 @@ enum DBState{
 };
 
 bool createDatabase(databaseManager** dbManager);
-
 bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
 bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager);
 

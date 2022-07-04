@@ -1,8 +1,9 @@
 #include"manager.h"
 
-// definition of "private" functions so that other functions can see them
+// definition of "private" functions so that other functions can see them (but only in this file)
 static char* createDbDirectory(databaseManager** dbManager);
 
+// developing of functions declared in manager.h
 bool createDatabase(databaseManager** dbManager){
   
   sqlite3* db;
