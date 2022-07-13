@@ -3,13 +3,12 @@
 
 typedef struct measurements{
   
-  char* dateAndHour;
+  char* dateOfMeasurement;
+  unsigned short int hourOfMeasurement;
   float temperature;
   float humidity;
   unsigned short int ppmCo2;
 
 }measurements;
-
-
 
 #endif

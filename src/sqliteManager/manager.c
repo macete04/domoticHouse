@@ -43,7 +43,7 @@ bool createDatabase(databaseManager** dbManager){
   return DB_SUCCESS;
 }
 
-bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager){
+bool createTable(const char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager){
   
   sqlite3 *db;
   databaseManager *tmp_dbManager = *dbManager;
@@ -105,7 +105,7 @@ bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, dat
   return DB_SUCCESS;
 }
 
-bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager){
+bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager){
   
   sqlite3* db;
   databaseManager* tmp_dbManager = *dbManager;
@@ -114,22 +114,27 @@ bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsT
   const char* SQL_INSTRUCTION_STARTING_POINT = "INSERT INTO";
   const char* VALUES_STRING = "VALUES";
   
+  char* tmp_hourOfMeasurement = malloc(sizeof(int));
   char* tmp_temperature = malloc(sizeof(double));
   char* tmp_humidity = malloc(sizeof(double));
   char* tmp_co2 = malloc(sizeof(int));
   
   // inserting data in strings so that i can insert them in the main sql instruction
+  snprintf(tmp_hourOfMeasurement, sizeof(int) + 1, "%d", tmp_measurementsToSave->hourOfMeasurement);
   snprintf(tmp_temperature, sizeof(double) + 1, "%f", tmp_measurementsToSave->temperature);
   snprintf(tmp_humidity, sizeof(double) + 1, "%f", tmp_measurementsToSave->humidity);
   snprintf(tmp_co2, sizeof(int) + 1, "%d", tmp_measurementsToSave->ppmCo2);
-
+  
   short int sqlInstructionLength = strlen(SQL_INSTRUCTION_STARTING_POINT) 
     + strlen(tableToSaveTo) 
     + strlen(VALUES_STRING) 
-    + strlen(tmp_measurementsToSave->dateAndHour)
+    + strlen(tmp_measurementsToSave->dateOfMeasurement)
     + (2*(short int)sizeof(double))
-    + (short int)sizeof(int)
-    + 4 + 2 + 6 + 2; // in order: number of commas between values and the semicolon at the end of the statement, number of parenthesis, number of ' used
+    + (2*(short int)sizeof(int))
+    + 5 + 2 + 6 + 2; 
+  // in order: number of commas between values and the semicolon at the end of the statement, 
+  // number of parenthesis, 
+  // number of ' used
   
   char* sqlInstruction = malloc(sqlInstructionLength);
   
@@ -142,8 +147,10 @@ bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsT
   strcat(sqlInstruction, VALUES_STRING);
   strcat(sqlInstruction, "(");
   strcat(sqlInstruction, "'");
-  strcat(sqlInstruction, tmp_measurementsToSave->dateAndHour);
+  strcat(sqlInstruction, tmp_measurementsToSave->dateOfMeasurement);
   strcat(sqlInstruction, "'");
+  strcat(sqlInstruction, ", ");
+  strcat(sqlInstruction, tmp_hourOfMeasurement);
   strcat(sqlInstruction, ", ");
   strcat(sqlInstruction, tmp_temperature);
   strcat(sqlInstruction, ", ");
@@ -181,6 +188,101 @@ bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsT
   return DB_SUCCESS;
 }
 
+fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour){
+  
+  sqlite3* db;
+  sqlite3_stmt* stmt;
+  databaseManager* tmp_dbManager = *dbManager;
+  
+  fetchedData fetchedDataFromDb;
+
+  const char* SQL_INSTRUCTION_STARTING_POINT = "SELECT ";
+  const char* SQL_FROM_STRING = " FROM";
+  const char* SQL_WHERE_STRING = "WHERE HOUROFMEASUREMENT >= ";
+  const char* SQL_AND_STRING = " AND HOUROFMEASUREMENT <= ";
+
+  char* tmp_minHour = malloc(sizeof(unsigned short int));
+  char* tmp_maxHour = malloc(sizeof(unsigned short int));
+  
+  char* parameterToSelect = (isTemperature) ? "TEMPERATURE" : "HUMIDITY";
+
+  snprintf(tmp_minHour, sizeof(unsigned short int) + 1, "%d", minHour);
+  snprintf(tmp_maxHour, sizeof(unsigned short int) + 1, "%d", maxHour);
+
+  short int sqlInstructionLength = strlen(SQL_INSTRUCTION_STARTING_POINT)
+    + strlen(parameterToSelect)
+    + strlen(SQL_FROM_STRING)
+    + strlen(tableName)
+    + strlen(SQL_WHERE_STRING)
+    + strlen(tmp_minHour)
+    + strlen(SQL_AND_STRING)
+    + strlen(tmp_maxHour);
+
+ 
+  char* sqlInstruction = malloc(sqlInstructionLength);
+  
+  memset(sqlInstruction, 0, sqlInstructionLength);
+
+  strcat(sqlInstruction, SQL_INSTRUCTION_STARTING_POINT);
+  strcat(sqlInstruction, parameterToSelect);
+  strcat(sqlInstruction, SQL_FROM_STRING);
+  strcat(sqlInstruction, tableName);
+  strcat(sqlInstruction, SQL_WHERE_STRING);
+  strcat(sqlInstruction, tmp_minHour);
+  strcat(sqlInstruction, SQL_AND_STRING);
+  strcat(sqlInstruction, tmp_maxHour);
+  
+  printf("\nsqlInstruction da dentro getTempOrHumidityDataByHour():\n%s\n", sqlInstruction);
+  
+  short int exit = 0;
+  exit = sqlite3_open(createDbDirectory(&tmp_dbManager), &db);
+  if(exit != SQLITE_OK){
+    sqlite3_close(db);
+    free(tmp_minHour);
+    free(tmp_maxHour);
+    free(sqlInstruction);
+    printf("getTempOrHumidityDataByHour(): something went wrong while opening db");
+//    return;
+  }
+  
+  exit = sqlite3_prepare_v2(db, sqlInstruction, -1, &stmt, 0);
+  
+  if(exit != SQLITE_OK){
+    sqlite3_close(db);
+    free(tmp_minHour);
+    free(tmp_maxHour);
+    free(sqlInstruction);
+    printf("getTempOrHumidityDataByHour(): something went wrong while reading db");
+//    return; // gotta find a method to exit function
+  }
+   
+  short int counter = 0;
+  while(sqlite3_step(stmt) == SQLITE_ROW){counter++;}
+  printf("counter: %d\n", counter);
+  fetchedDataFromDb.indexNumber = counter;
+
+  double* fetchedDataContainer = malloc(sizeof(double) * counter);
+  
+  memset(fetchedDataContainer, 0, counter);
+
+  short int i = 0;   
+  while((sqlite3_step(stmt) == SQLITE_ROW)&&(i < counter)){
+    printf("sus %d: %f\n", i, sqlite3_column_double(stmt, 0));
+    fetchedDataContainer[i] = sqlite3_column_double(stmt, 0);
+    i++;
+  }
+
+  fetchedDataFromDb.fetchedDataArray = fetchedDataContainer;
+
+  sqlite3_finalize(stmt);
+  sqlite3_close(db);
+  free(tmp_minHour);
+  free(tmp_maxHour);
+  free(sqlInstruction);
+  
+  return fetchedDataFromDb;
+}
+// ciao
 // actual developing of "private" functions
 static char* createDbDirectory(databaseManager** dbManager){
 

@@ -4,19 +4,18 @@
 #include"sensorTypes/sensorTypes.h"
 #include"dateManager/dateManager.h"
 
-#define NUMBER_OF_COLUMNS 4
+#define NUMBER_OF_COLUMNS 5
 
 
-int main(){
+int main(void){
   
-  // creating db struct
-  databaseManager dbManager = {"/measurements.db", getenv("HOME"), "/NetAtmoOpenSourceUtilities"};
+  databaseManager dbManager = {"/measurements.db", getenv("HOME"), "/domoticHouseUtilities"};
   databaseManager *ptr_dbManager = &dbManager;
   
-  measurements m = {getDate(), 23.2, 37.7, 123};
+  measurements m = {getDate(), 18, 33.7, 52.7, 224};
   measurements *ptr_m = &m;
   
-  char* MEASUREMENTS_TABLE_NAME = " measurementsTable ";
+  const char* MEASUREMENTS_TABLE_NAME = " measurementsTable ";
 
   bool exit;
 
@@ -24,8 +23,7 @@ int main(){
   
   printf("%s", exit ? "Database created successfully\n" : "Something went wrong while creating the DB\n");
   
-  // creating table
-  char* columnsAndTypes[NUMBER_OF_COLUMNS] = {"DAYOFMEASUREMENT date", "TEMPERATURE REAL", "HUMIDITY REAL", "CO2PPM INTEGER"};
+  char* columnsAndTypes[NUMBER_OF_COLUMNS] = {"DAYOFMEASUREMENT date", "HOUROFMEASUREMENT INTEGER", "TEMPERATURE REAL", "HUMIDITY REAL", "CO2PPM INTEGER"};
   
   printf("calling createTable()\n");
   exit = createTable(MEASUREMENTS_TABLE_NAME, columnsAndTypes, NUMBER_OF_COLUMNS, &ptr_dbManager); // adding spaces to the tableName so that i dont have to add them in the sqliteManager 
@@ -34,6 +32,15 @@ int main(){
   printf("calling insertAndSaveMeasurements()\n");
   exit = insertAndSaveMeasurements(MEASUREMENTS_TABLE_NAME, &ptr_m, &ptr_dbManager);
   printf("%s", exit ? "Saved successfully\n" : "Something went wrong\n");
-
+  
+  printf("Calling getTempOrHum...()");
+  fetchedData fetchedDataFromDb = getTempOrHumidityDataByHour(&ptr_dbManager, false, MEASUREMENTS_TABLE_NAME, 14, 16);
+  
+  printf("contatore: %d\n", fetchedDataFromDb.indexNumber);
+  
+  for(short int i = 0; i < fetchedDataFromDb.indexNumber; ++i){
+    printf("Valore nell'array alla casella %d: %f\n", i, *(fetchedDataFromDb.fetchedDataArray + i));
+  }
+  
   return 0;
 }

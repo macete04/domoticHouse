@@ -20,14 +20,21 @@ typedef struct databaseManager{
   
 }databaseManager;
 
+typedef struct fetchedData{
+  
+  unsigned short int indexNumber;
+  double* fetchedDataArray;
+
+}fetchedData;
+
 enum DBState{
   DB_FAIL = false,
   DB_SUCCESS = true,
 };
 
 bool createDatabase(databaseManager** dbManager);
-bool createTable(char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
-bool insertAndSaveMeasurements(char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager);
-
+bool createTable(const char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
+bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager);
+fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour);
 
 #endif

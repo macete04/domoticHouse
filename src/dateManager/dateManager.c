@@ -31,5 +31,9 @@ char* getDate(void){
   strcat(date, "-");
   strcat(date, c_year);
   
-  return date;
+  free(c_day);
+  free(c_month);
+  free(c_year);
+
+  return date; // not freeing -> mem leak?
 }
