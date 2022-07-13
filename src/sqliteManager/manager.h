@@ -13,15 +13,15 @@
 #include"../sensorTypes/sensorTypes.h"
 
 typedef struct databaseManager{
-  
+
   char* name;
   char* parentDirectory;
   char* folder;
-  
+
 }databaseManager;
 
 typedef struct fetchedData{
-  
+
   unsigned short int indexNumber;
   double* fetchedDataArray;
 
@@ -35,6 +35,6 @@ enum DBState{
 bool createDatabase(databaseManager** dbManager);
 bool createTable(const char* tableName, char** colAndTypes, short int sizeOfArray, databaseManager** dbManager);
 bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measurementsToSave, databaseManager** dbManager);
-fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour);
+bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetchedDataFromDb, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour);
 
 #endif

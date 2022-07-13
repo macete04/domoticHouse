@@ -12,7 +12,8 @@ int main(void){
   databaseManager dbManager = {"/measurements.db", getenv("HOME"), "/domoticHouseUtilities"};
   databaseManager *ptr_dbManager = &dbManager;
   
-  measurements m = {getDate(), 18, 33.7, 52.7, 224};
+  char* todaysDate = getDate();
+  measurements m = {todaysDate, 18, 33.7, 52.7, 224};
   measurements *ptr_m = &m;
   
   const char* MEASUREMENTS_TABLE_NAME = " measurementsTable ";
@@ -34,13 +35,17 @@ int main(void){
   printf("%s", exit ? "Saved successfully\n" : "Something went wrong\n");
   
   printf("Calling getTempOrHum...()");
-  fetchedData fetchedDataFromDb = getTempOrHumidityDataByHour(&ptr_dbManager, false, MEASUREMENTS_TABLE_NAME, 14, 16);
+  fetchedData fetchedDataFromDb;
+  fetchedData* ptr_fetchedDataFromDb = &fetchedDataFromDb;
+
+  exit = getTempOrHumidityDataByHour(&ptr_dbManager, &ptr_fetchedDataFromDb, false, MEASUREMENTS_TABLE_NAME, 14, 16);
   
   printf("contatore: %d\n", fetchedDataFromDb.indexNumber);
   
   for(short int i = 0; i < fetchedDataFromDb.indexNumber; ++i){
     printf("Valore nell'array alla casella %d: %f\n", i, *(fetchedDataFromDb.fetchedDataArray + i));
   }
-  
+  free(fetchedDataFromDb.fetchedDataArray); 
+  free(todaysDate);
   return 0;
 }

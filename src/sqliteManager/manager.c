@@ -8,16 +8,16 @@ bool createDatabase(databaseManager** dbManager){
   
   sqlite3* db;
   
-  databaseManager* temp = *dbManager;
+  databaseManager* tmp_dbManager = *dbManager;
  
   // creating the directory where the db will be created
-  size_t stringForDirLen = strlen(temp->parentDirectory) + strlen(temp->folder);
+  size_t stringForDirLen = strlen(tmp_dbManager->parentDirectory) + strlen(tmp_dbManager->folder);
   char *tempStringForDir = malloc(stringForDirLen); 
   
   memset(tempStringForDir, 0, stringForDirLen); 
   
-  strcat(tempStringForDir, temp->parentDirectory);
-  strcat(tempStringForDir, temp->folder);
+  strcat(tempStringForDir, tmp_dbManager->parentDirectory);
+  strcat(tempStringForDir, tmp_dbManager->folder);
   
   struct stat st = {0};
   if(stat(tempStringForDir, &st) == -1){
@@ -25,7 +25,7 @@ bool createDatabase(databaseManager** dbManager){
   }
   
   // creating database
-  char *dirToCreateDBIn = createDbDirectory(&temp);
+  char *dirToCreateDBIn = createDbDirectory(&tmp_dbManager);
   
   short int exit = 0;
   
@@ -96,6 +96,7 @@ bool createTable(const char* tableName, char** colAndTypes, short int sizeOfArra
   sqlite3_close(db);
   free(sqlInstruction);
   free(tmp_dirWhereDbIsSaved);
+
   if(exit != SQLITE_OK){
     printf("createTable(): Something went wrong: %s\n", errorMessage);
     sqlite3_free(errorMessage);
@@ -160,24 +161,30 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   strcat(sqlInstruction, ");");
   
   short int exit = 0;
-  exit = sqlite3_open(createDbDirectory(&tmp_dbManager), &db); 
+  
+  char* tmp_dbDirectory = createDbDirectory(&tmp_dbManager);
+  exit = sqlite3_open(tmp_dbDirectory, &db); 
   if(exit != SQLITE_OK){
     sqlite3_close(db);
+    free(tmp_hourOfMeasurement);
     free(tmp_temperature);
     free(tmp_humidity);
     free(tmp_co2);
     free(sqlInstruction);
+    free(tmp_dbDirectory);
     return DB_FAIL;
   }
   
   char* errorMessage;
   exit = sqlite3_exec(db, sqlInstruction, NULL, 0, &errorMessage);
-
+  
+  free(tmp_hourOfMeasurement);
   free(tmp_temperature);
   free(tmp_humidity);
   free(tmp_co2);
   free(sqlInstruction);
-  
+  free(tmp_dbDirectory);
+
   if(exit != SQLITE_OK){
     printf("insertAndSaveMeasurements(): %s\n", errorMessage);
     sqlite3_free(errorMessage);
@@ -188,19 +195,18 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   return DB_SUCCESS;
 }
 
-fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour){
+bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetchedDataFromDb, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour){
   
-  sqlite3* db;
+  sqlite3 *db;
   sqlite3_stmt* stmt;
   databaseManager* tmp_dbManager = *dbManager;
-  
-  fetchedData fetchedDataFromDb;
-
+  fetchedData* tmp_fetchedDataFromDb = *fetchedDataFromDb;
+ 
   const char* SQL_INSTRUCTION_STARTING_POINT = "SELECT ";
   const char* SQL_FROM_STRING = " FROM";
   const char* SQL_WHERE_STRING = "WHERE HOUROFMEASUREMENT >= ";
   const char* SQL_AND_STRING = " AND HOUROFMEASUREMENT <= ";
-
+  
   char* tmp_minHour = malloc(sizeof(unsigned short int));
   char* tmp_maxHour = malloc(sizeof(unsigned short int));
   
@@ -217,7 +223,6 @@ fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemp
     + strlen(tmp_minHour)
     + strlen(SQL_AND_STRING)
     + strlen(tmp_maxHour);
-
  
   char* sqlInstruction = malloc(sqlInstructionLength);
   
@@ -235,16 +240,19 @@ fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemp
   printf("\nsqlInstruction da dentro getTempOrHumidityDataByHour():\n%s\n", sqlInstruction);
   
   short int exit = 0;
-  exit = sqlite3_open(createDbDirectory(&tmp_dbManager), &db);
+
+  char* tmp_dbDirectory = createDbDirectory(&tmp_dbManager);
+  exit = sqlite3_open(tmp_dbDirectory, &db);
   if(exit != SQLITE_OK){
     sqlite3_close(db);
     free(tmp_minHour);
     free(tmp_maxHour);
     free(sqlInstruction);
+    free(tmp_dbDirectory);
     printf("getTempOrHumidityDataByHour(): something went wrong while opening db");
-//    return;
+    return DB_FAIL;
   }
-  
+
   exit = sqlite3_prepare_v2(db, sqlInstruction, -1, &stmt, 0);
   
   if(exit != SQLITE_OK){
@@ -252,14 +260,15 @@ fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemp
     free(tmp_minHour);
     free(tmp_maxHour);
     free(sqlInstruction);
+    free(tmp_dbDirectory);
     printf("getTempOrHumidityDataByHour(): something went wrong while reading db");
-//    return; // gotta find a method to exit function
+    return DB_FAIL;
   }
    
   short int counter = 0;
   while(sqlite3_step(stmt) == SQLITE_ROW){counter++;}
   printf("counter: %d\n", counter);
-  fetchedDataFromDb.indexNumber = counter;
+  tmp_fetchedDataFromDb->indexNumber = counter;
 
   double* fetchedDataContainer = malloc(sizeof(double) * counter);
   
@@ -272,17 +281,17 @@ fetchedData getTempOrHumidityDataByHour(databaseManager** dbManager, bool isTemp
     i++;
   }
 
-  fetchedDataFromDb.fetchedDataArray = fetchedDataContainer;
+  tmp_fetchedDataFromDb->fetchedDataArray = fetchedDataContainer;
 
   sqlite3_finalize(stmt);
   sqlite3_close(db);
   free(tmp_minHour);
   free(tmp_maxHour);
   free(sqlInstruction);
-  
-  return fetchedDataFromDb;
+  free(tmp_dbDirectory);
+  return true;
 }
-// ciao
+
 // actual developing of "private" functions
 static char* createDbDirectory(databaseManager** dbManager){
 
