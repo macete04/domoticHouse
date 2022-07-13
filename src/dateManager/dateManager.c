@@ -35,5 +35,5 @@ char* getDate(void){
   free(c_month);
   free(c_year);
 
-  return date; // not freeing -> mem leak?
+  return date;
 }
