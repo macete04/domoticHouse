@@ -1,0 +1,10 @@
+{
+  "date": "12-07-2022",
+  "hour": 14,
+  "device": "deviceID",
+  "measurements": {
+    "temperature": 27.5,
+    "humidity": 65.700000000000003,
+    "co2": 234
+  }
+}

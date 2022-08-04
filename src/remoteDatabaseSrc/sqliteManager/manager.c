@@ -130,12 +130,13 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
     + strlen(tableToSaveTo) 
     + strlen(VALUES_STRING) 
     + strlen(tmp_measurementsToSave->dateOfMeasurement)
+    + strlen(tmp_measurementsToSave->deviceID)
     + (2*(short int)sizeof(double))
     + (2*(short int)sizeof(int))
-    + 5 + 2 + 6 + 2; 
-  // in order: number of commas between values and the semicolon at the end of the statement, 
-  // number of parenthesis, 
-  // number of ' used
+    + 2 // the two parenthesis that wrap the values
+    + 4 // number of ' used
+    + 5*2 // number of commas and the space immediately after them
+    + 1; // the semicolon at the end of the statement 
   
   char* sqlInstruction = malloc(sqlInstructionLength);
   
@@ -151,6 +152,10 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   strcat(sqlInstruction, tmp_measurementsToSave->dateOfMeasurement);
   strcat(sqlInstruction, "'");
   strcat(sqlInstruction, ", ");
+  strcat(sqlInstruction, "'");
+  strcat(sqlInstruction, tmp_measurementsToSave->deviceID);
+  strcat(sqlInstruction, "'");
+  strcat(sqlInstruction, ", ");
   strcat(sqlInstruction, tmp_hourOfMeasurement);
   strcat(sqlInstruction, ", ");
   strcat(sqlInstruction, tmp_temperature);
@@ -163,6 +168,7 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   short int exit = 0;
   
   char* tmp_dbDirectory = createDbDirectory(&tmp_dbManager);
+  printf("%s\n", tmp_dbDirectory);
   exit = sqlite3_open(tmp_dbDirectory, &db); 
   if(exit != SQLITE_OK){
     sqlite3_close(db);
@@ -186,7 +192,7 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   free(tmp_dbDirectory);
 
   if(exit != SQLITE_OK){
-    printf("insertAndSaveMeasurements(): %s\n", errorMessage);
+    printf("insertAndSaveMeasurements(...): %s\n", errorMessage);
     sqlite3_free(errorMessage);
     return DB_FAIL;
   }
@@ -236,8 +242,6 @@ bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetc
   strcat(sqlInstruction, tmp_minHour);
   strcat(sqlInstruction, SQL_AND_STRING);
   strcat(sqlInstruction, tmp_maxHour);
-  
-  printf("\nsqlInstruction da dentro getTempOrHumidityDataByHour():\n%s\n", sqlInstruction);
   
   short int exit = 0;
 

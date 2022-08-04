@@ -1,0 +1,9 @@
+{
+  "broker": "tcp://com.yourbroker.broker:yourPort",
+  "client_id": "yourClientId",
+  "username": "yourUsername",
+  "password": "yourPassword",
+  "topics": [
+    "sample/topic/1"
+  ]
+}

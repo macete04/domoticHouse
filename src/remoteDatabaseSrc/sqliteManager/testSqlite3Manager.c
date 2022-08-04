@@ -1,10 +1,10 @@
 #include<stdio.h>
 #include<stdlib.h>
-#include"sqliteManager/manager.h"
-#include"sensorTypes/sensorTypes.h"
-#include"dateManager/dateManager.h"
+#include"manager.h"
+#include"../customStructs/measurementsStruct.h"
+#include"../dateManager/dateManager.h"
 
-#define NUMBER_OF_COLUMNS 5
+#define NUMBER_OF_COLUMNS 6
 
 
 int main(void){
@@ -13,7 +13,7 @@ int main(void){
   databaseManager *ptr_dbManager = &dbManager;
   
   char* todaysDate = getDate();
-  measurements m = {todaysDate, 18, 33.7, 52.7, 224};
+  measurements m = MEASUREMENTS_STRUCT_INITIALIZER;
   measurements *ptr_m = &m;
   
   const char* MEASUREMENTS_TABLE_NAME = " measurementsTable ";
@@ -24,7 +24,7 @@ int main(void){
   
   printf("%s", exit ? "Database created successfully\n" : "Something went wrong while creating the DB\n");
   
-  char* columnsAndTypes[NUMBER_OF_COLUMNS] = {"DAYOFMEASUREMENT date", "HOUROFMEASUREMENT INTEGER", "TEMPERATURE REAL", "HUMIDITY REAL", "CO2PPM INTEGER"};
+  char* columnsAndTypes[NUMBER_OF_COLUMNS] = {"DAYOFMEASUREMENT date", "DEVICEID TEXT", "HOUROFMEASUREMENT INTEGER", "TEMPERATURE REAL", "HUMIDITY REAL", "CO2PPM INTEGER"};
   
   printf("calling createTable()\n");
   exit = createTable(MEASUREMENTS_TABLE_NAME, columnsAndTypes, NUMBER_OF_COLUMNS, &ptr_dbManager); // adding spaces to the tableName so that i dont have to add them in the sqliteManager 
