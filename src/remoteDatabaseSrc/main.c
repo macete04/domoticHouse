@@ -39,7 +39,6 @@ int main(){
   // the executables/remoteDatabaseExecutable/ dir
   ptr_configFile = fopen("../../src/remoteDatabaseSrc/config.json", "r");
   
-  // segfault happens here.
   fread(buffer, CONFIG_JSON_SIZE, 1, ptr_configFile);
   
   bool isSuccess = getInfosFromConfigFile(buffer, &ptr_mqttStuff);
