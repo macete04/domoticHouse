@@ -20,9 +20,6 @@ void messageDelivered(void *context, MQTTClient_deliveryToken deliveryToken); //
 int messageArrived(void *context, char* topicName, int topicLength, MQTTClient_message *message);
 void connectionLost(void *context, char* cause);
 
-#define BROKER "tcp://cow.rmq2.cloudamqp.com:1883"
-#define CLIENT_ID "client_id"
-#define TOPIC "ciao/come/va"
 #define QOS 1
 
 #define CONFIG_JSON_SIZE 1024
