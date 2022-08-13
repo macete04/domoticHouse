@@ -32,13 +32,22 @@ int main(){
   mqttClientInfos* ptr_mqttStuff = &mqttStuff;
 
   FILE* ptr_configFile;
+  
+  char* homeDir = getenv("HOME");
+  char* wantedDirAndFileName = "/domoticHouseUtilities/config.json";
+
+  char* configFileDir = malloc(strlen(homeDir)+strlen(wantedDirAndFileName));
+  
+  memset(configFileDir, 0, strlen(homeDir)+strlen(wantedDirAndFileName));
+
+  strcat(configFileDir, homeDir);
+  strcat(configFileDir, wantedDirAndFileName);
+  
+  ptr_configFile = fopen(configFileDir, "r");
+  
   char* buffer = malloc(CONFIG_JSON_SIZE);
   memset(buffer, 0, CONFIG_JSON_SIZE);
 
-  // to keep this directory to open the file you have to start the proram from INSIDE 
-  // the executables/remoteDatabaseExecutable/ dir
-  ptr_configFile = fopen("../../src/remoteDatabaseSrc/config.json", "r");
-  
   fread(buffer, CONFIG_JSON_SIZE, 1, ptr_configFile);
   
   bool isSuccess = getInfosFromConfigFile(buffer, &ptr_mqttStuff);
