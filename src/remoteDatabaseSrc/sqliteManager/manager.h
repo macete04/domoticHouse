@@ -51,7 +51,7 @@ bool getTempHumidityOrCo2Data(
     const unsigned short int columnToSelect,
     const unsigned short int parameterFromJson,
     const char* tableName, 
-    const char* minHour, 
-    const char* maxHour);
+    const char* minLimit, 
+    const char* maxLimit);
 
 #endif

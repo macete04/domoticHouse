@@ -216,12 +216,12 @@ bool getTempHumidityOrCo2Data(databaseManager** dbManager, fetchedData** fetched
   switch(columnToSelect){
     
     case 1:
-      SQL_WHERE_STRING = " WHERE HOUROFMEASUREMENT >= ";
+      SQL_WHERE_STRING = "WHERE HOUROFMEASUREMENT >= ";
       SQL_AND_STRING = " AND HOUROFMEASUREMENT <= ";
       break;
 
     case 2:
-      SQL_WHERE_STRING = " WHERE DAYOFMEASUREMENT >= ";
+      SQL_WHERE_STRING = "WHERE DAYOFMEASUREMENT >= ";
       SQL_AND_STRING = " AND DAYOFMEASUREMENT <= ";
       break;
 
@@ -257,7 +257,8 @@ bool getTempHumidityOrCo2Data(databaseManager** dbManager, fetchedData** fetched
     + strlen(SQL_WHERE_STRING)
     + strlen(minLimit)
     + strlen(SQL_AND_STRING)
-    + strlen(maxLimit);
+    + strlen(maxLimit)
+    + 4; // number of ' used
  
   char* sqlInstruction = malloc(sqlInstructionLength);
   
@@ -268,9 +269,13 @@ bool getTempHumidityOrCo2Data(databaseManager** dbManager, fetchedData** fetched
   strcat(sqlInstruction, SQL_FROM_STRING);
   strcat(sqlInstruction, tableName);
   strcat(sqlInstruction, SQL_WHERE_STRING);
+  strcat(sqlInstruction, "'");
   strcat(sqlInstruction, minLimit);
+  strcat(sqlInstruction, "'");
   strcat(sqlInstruction, SQL_AND_STRING);
+  strcat(sqlInstruction, "'");
   strcat(sqlInstruction, maxLimit);
+  strcat(sqlInstruction, "'");
  
   printf("%s\n", sqlInstruction);
   
@@ -286,7 +291,6 @@ bool getTempHumidityOrCo2Data(databaseManager** dbManager, fetchedData** fetched
     return DB_FAIL;
   }
   
-
   exit = sqlite3_prepare_v2(db, sqlInstruction, -1, &stmt, 0);
   
   if(exit != SQLITE_OK){

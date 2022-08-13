@@ -8,7 +8,6 @@
 #include<stdlib.h>
 #include<stdbool.h>
 #include<sys/stat.h>
-#include<fcntl.h>
 #include<unistd.h>
 #include<pthread.h>
 #include"mqttMessageParser/mqttMessageParser.h"
@@ -35,7 +34,6 @@ int main(){
   
   char* homeDir = getenv("HOME");
   char* wantedDirAndFileName = "/domoticHouseUtilities/config.json";
-
   char* configFileDir = malloc(strlen(homeDir)+strlen(wantedDirAndFileName));
   
   memset(configFileDir, 0, strlen(homeDir)+strlen(wantedDirAndFileName));
@@ -51,9 +49,8 @@ int main(){
   fread(buffer, CONFIG_JSON_SIZE, 1, ptr_configFile);
   
   bool isSuccess = getInfosFromConfigFile(buffer, &ptr_mqttStuff);
+  free(configFileDir);
   free(buffer); 
-  
-  printf("%d", mqttStuff.topicsArrayLength);
 
   MQTTClient mqttClient;
 	MQTTClient_connectOptions connectionOptions = MQTTClient_connectOptions_initializer;
@@ -85,7 +82,7 @@ int main(){
 	char thing;
 	do {
 		thing = getchar();
-	}while(thing != 'Q' && thing != 'q'); // gotta catch ctrlC too?
+	}while(thing != 'Q' && thing != 'q'); // gotta catch ctrlC too
 
 	MQTTClient_disconnect(mqttClient, 1000);
 	MQTTClient_destroy(&mqttClient);
@@ -106,14 +103,10 @@ int messageArrived(void *context, char* topicName, int topicLength, MQTTClient_m
   // I'm using threads as i can't call a function or the program will crash (deadlock)
   pthread_t t1;
   if(pthread_create(&t1, NULL, &mqttMessageParser, (void*)message->payload) != 0){
-
     printf("An error occured while creating the thread");
-
   }
   if(pthread_join(t1, NULL) != 0){
-
     printf("An error occured while joining thread");
-  
   } 
   
   return 1;  

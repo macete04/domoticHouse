@@ -32,13 +32,7 @@ void* mqttMessageParser(void* mqttMessage){
 
     getValuesForRequest(mqttMessage1, &ptr_requestDataStruct);
     printf("Message IS a request\n");
-    
-    printf("%s\n", requestDataStruct.hourOrDay);
-    printf("%s\n", requestDataStruct.deviceID);
-    printf("%d\n", requestDataStruct.chosenParameter);
-    printf("%s\n", requestDataStruct.minLimit);
-    printf("%s\n", requestDataStruct.maxLimit);
-    
+   
     // HOUR and DATE defined in jsonManager.h
     if(strcmp(requestDataStruct.hourOrDay, HOUR) == 0){
 
@@ -47,7 +41,7 @@ void* mqttMessageParser(void* mqttMessage){
     }else if(strcmp(requestDataStruct.hourOrDay, DATE) == 0){
    
       getTempHumidityOrCo2Data(&ptr_dbManager, &ptr_dataInDb, SELECT_DATE_COLUMN, requestDataStruct.chosenParameter, MEASUREMENTS_TABLE, requestDataStruct.minLimit, requestDataStruct.maxLimit);
-
+    
     }else{
       return false;
     }

@@ -18,9 +18,9 @@ dati_per_boh = {
         "hourOrDay":"date",
         "deviceID":"deviceName",
         "request":1,
-        "chosenParameter":3,
-        "minDate": "13-07-2022", 
-        "maxDate": "15-07-2022"
+        "chosenParameter":1,
+        "minDate": "12-07-2022", 
+        "maxDate": "14-07-2022"
 }
 
 dati_per_grafici = js.dumps(dati_per_grafici)
