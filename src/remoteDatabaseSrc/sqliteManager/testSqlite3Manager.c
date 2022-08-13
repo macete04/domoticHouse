@@ -37,7 +37,8 @@ int main(void){
   printf("Calling getTempOrHum...()");
   fetchedData fetchedDataFromDb;
   fetchedData* ptr_fetchedDataFromDb = &fetchedDataFromDb;
-
+ 
+  // doesn't work anymore as the function has changed drastically
   exit = getTempOrHumidityDataByHour(&ptr_dbManager, &ptr_fetchedDataFromDb, false, MEASUREMENTS_TABLE_NAME, 14, 16);
   
   printf("contatore: %d\n", fetchedDataFromDb.indexNumber);

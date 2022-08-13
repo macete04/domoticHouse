@@ -4,8 +4,18 @@
 #include"globalVariables.h"
 
 #define NUMBER_OF_COLUMNS 6
+#define pass printf("this function still has to be developed")
 
-int main(){
+
+void printHelp();
+
+int main(int argc, char* argv[]){
+  
+  if(argc == 2){
+    if(strcmp("help", argv[1]) == 0){
+      printHelp();      
+    }
+  }
 
   databaseManager dbManager = DATABASE_MANAGER_INITIALIZER;
   databaseManager* ptr_dbManager = &dbManager;
@@ -61,8 +71,42 @@ int main(){
       printf("FAILED: table was NOT created\n");
       exit(EXIT_FAILURE);
   }
+  
+  // now we create config.json file
+  char* homeDir = getenv("HOME");
+  char* wantedDirAndFileName = "/domoticHouseUtilities/config.json";
 
+  char* configFileDir = malloc(strlen(homeDir)+strlen(wantedDirAndFileName));
+  
+  memset(configFileDir, 0, strlen(homeDir)+strlen(wantedDirAndFileName));
+
+  strcat(configFileDir, homeDir);
+  strcat(configFileDir, wantedDirAndFileName);
+  
+  printf("Creating config.json file in %s\n", configFileDir);
+  FILE* configFile;
+  
+  configFile = fopen(configFileDir, "w+");
+  if(configFile == NULL){
+    printf("FAILED: config.json file was not created");
+    exit(EXIT_FAILURE);  
+  }
+
+  // we now write to the file all the fields we need
+  char* configJsonFileBase = 
+    "{\n\t\"broker\": ,\n\t\"client_id\": ,\n\t\"username\": ,\n\t\"password\": ,\n\t\"topics\": []\n}";
+  fprintf(configFile, "%s", configJsonFileBase);
+  
+  free(configFileDir);
+  fclose(configFile);
+  
   // TODO: implement checking for folder and database file before printing this out
   printf("SUCCESS: your system was successfully prepared!\n");
   return 0;
+}
+
+void printHelp(){
+
+  pass;
+
 }

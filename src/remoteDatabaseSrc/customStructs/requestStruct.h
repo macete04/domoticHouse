@@ -3,12 +3,13 @@
 
 #include<stdbool.h>
 
-#define REQUESTSTRUCT_INITIALIZER {"hourOrDay", "deviceID", "1-1-1111", "1-1-1111"}
+#define REQUESTSTRUCT_INITIALIZER {"hourOrDay", "deviceID", 1, "1-1-1111", "1-1-1111"}
 
 typedef struct requestStruct{
   
   char* hourOrDay;
   char* deviceID;
+  unsigned short int chosenParameter;
   char* maxLimit;
   char* minLimit;
 

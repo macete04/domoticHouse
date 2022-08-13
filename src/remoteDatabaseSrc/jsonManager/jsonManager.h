@@ -7,6 +7,9 @@
 #include"../customStructs/measurementsStruct.h"
 #include"../customStructs/requestStruct.h"
 
+#define HOUR "hour"
+#define DAY "day"
+
 typedef struct mqttClientInfos{
 
   char* broker;

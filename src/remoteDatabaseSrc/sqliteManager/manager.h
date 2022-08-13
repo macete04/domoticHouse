@@ -34,20 +34,24 @@ enum DBState{
 };
 
 bool createDatabase(databaseManager** dbManager);
-bool createTable(const char* tableName, 
+bool createTable(
+    const char* tableName, 
     char** colAndTypes, 
     short int sizeOfArray, 
     databaseManager** dbManager);
 
-bool insertAndSaveMeasurements(const char* tableToSaveTo, 
+bool insertAndSaveMeasurements(
+    const char* tableToSaveTo, 
     measurements** measurementsToSave, 
     databaseManager** dbManager);
 
-bool getTempOrHumidityDataByHour(databaseManager** dbManager, 
+bool getTempHumidityOrCo2Data(
+    databaseManager** dbManager, 
     fetchedData** fetchedDataFromDb, 
-    bool isTemperature, 
+    const unsigned short int columnToSelect,
+    const unsigned short int parameterFromJson,
     const char* tableName, 
-    const unsigned short int minHour, 
-    const unsigned short int maxHour);
+    const char* minHour, 
+    const char* maxHour);
 
 #endif

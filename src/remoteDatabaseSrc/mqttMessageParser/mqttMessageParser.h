@@ -9,6 +9,11 @@
 #include"../sqliteManager/manager.h"
 #include"../globalVariables.h"
 
+enum dbColumnsToSelect{
+  SELECT_HOUR_COLUMN = 1,
+  SELECT_DATE_COLUMN = 2
+};
+
 void* mqttMessageParser(void* mqttMessage);
 
 #endif

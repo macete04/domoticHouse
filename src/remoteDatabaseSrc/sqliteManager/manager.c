@@ -201,8 +201,8 @@ bool insertAndSaveMeasurements(const char* tableToSaveTo, measurements** measure
   return DB_SUCCESS;
 }
 
-bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetchedDataFromDb, bool isTemperature, const char* tableName, const unsigned short int minHour, const unsigned short int maxHour){
-  
+bool getTempHumidityOrCo2Data(databaseManager** dbManager, fetchedData** fetchedDataFromDb, const unsigned short int columnToSelect, const unsigned short int parameterFromJson, const char* tableName, const char* minLimit, const char* maxLimit){
+   
   sqlite3 *db;
   sqlite3_stmt* stmt;
   databaseManager* tmp_dbManager = *dbManager;
@@ -210,25 +210,54 @@ bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetc
  
   const char* SQL_INSTRUCTION_STARTING_POINT = "SELECT ";
   const char* SQL_FROM_STRING = " FROM";
-  const char* SQL_WHERE_STRING = "WHERE HOUROFMEASUREMENT >= ";
-  const char* SQL_AND_STRING = " AND HOUROFMEASUREMENT <= ";
+  const char* SQL_WHERE_STRING = "";
+  const char* SQL_AND_STRING = "";
   
-  char* tmp_minHour = malloc(sizeof(unsigned short int));
-  char* tmp_maxHour = malloc(sizeof(unsigned short int));
-  
-  char* parameterToSelect = (isTemperature) ? "TEMPERATURE" : "HUMIDITY";
+  switch(columnToSelect){
+    
+    case 1:
+      SQL_WHERE_STRING = " WHERE HOUROFMEASUREMENT >= ";
+      SQL_AND_STRING = " AND HOUROFMEASUREMENT <= ";
+      break;
 
-  snprintf(tmp_minHour, sizeof(unsigned short int) + 1, "%d", minHour);
-  snprintf(tmp_maxHour, sizeof(unsigned short int) + 1, "%d", maxHour);
+    case 2:
+      SQL_WHERE_STRING = " WHERE DAYOFMEASUREMENT >= ";
+      SQL_AND_STRING = " AND DAYOFMEASUREMENT <= ";
+      break;
+
+    default: 
+      return DB_FAIL;
+  }
+
+  char* parameterToSelect = "";
+  
+  printf("%d", parameterFromJson);
+
+  switch(parameterFromJson){
+    case 1:
+      parameterToSelect = "TEMPERATURE";
+      break;
+    
+    case 2:
+      parameterToSelect = "HUMIDITY";
+      break;
+
+    case 3:
+      parameterToSelect = "CO2PPM";
+      break;
+
+    default:
+      return DB_FAIL;
+  }
 
   short int sqlInstructionLength = strlen(SQL_INSTRUCTION_STARTING_POINT)
     + strlen(parameterToSelect)
     + strlen(SQL_FROM_STRING)
     + strlen(tableName)
     + strlen(SQL_WHERE_STRING)
-    + strlen(tmp_minHour)
+    + strlen(minLimit)
     + strlen(SQL_AND_STRING)
-    + strlen(tmp_maxHour);
+    + strlen(maxLimit);
  
   char* sqlInstruction = malloc(sqlInstructionLength);
   
@@ -239,9 +268,11 @@ bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetc
   strcat(sqlInstruction, SQL_FROM_STRING);
   strcat(sqlInstruction, tableName);
   strcat(sqlInstruction, SQL_WHERE_STRING);
-  strcat(sqlInstruction, tmp_minHour);
+  strcat(sqlInstruction, minLimit);
   strcat(sqlInstruction, SQL_AND_STRING);
-  strcat(sqlInstruction, tmp_maxHour);
+  strcat(sqlInstruction, maxLimit);
+ 
+  printf("%s\n", sqlInstruction);
   
   short int exit = 0;
 
@@ -249,20 +280,17 @@ bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetc
   exit = sqlite3_open(tmp_dbDirectory, &db);
   if(exit != SQLITE_OK){
     sqlite3_close(db);
-    free(tmp_minHour);
-    free(tmp_maxHour);
     free(sqlInstruction);
     free(tmp_dbDirectory);
     printf("getTempOrHumidityDataByHour(): something went wrong while opening db");
     return DB_FAIL;
   }
+  
 
   exit = sqlite3_prepare_v2(db, sqlInstruction, -1, &stmt, 0);
   
   if(exit != SQLITE_OK){
     sqlite3_close(db);
-    free(tmp_minHour);
-    free(tmp_maxHour);
     free(sqlInstruction);
     free(tmp_dbDirectory);
     printf("getTempOrHumidityDataByHour(): something went wrong while reading db");
@@ -289,8 +317,6 @@ bool getTempOrHumidityDataByHour(databaseManager** dbManager, fetchedData** fetc
 
   sqlite3_finalize(stmt);
   sqlite3_close(db);
-  free(tmp_minHour);
-  free(tmp_maxHour);
   free(sqlInstruction);
   free(tmp_dbDirectory);
   return true;

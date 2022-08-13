@@ -84,14 +84,16 @@ bool getValuesForRequest(char* mqttMessage, requestStruct** requestDataStruct){
   requestStruct* tmp_requestDataStruct = *requestDataStruct;
   
   json_object *jsonToParse;
-  json_object *hourOrDay, *deviceID;
+  json_object *hourOrDay, *deviceID, *parameterFromJson;
   
   jsonToParse = json_tokener_parse(mqttMessage);
 
   hourOrDay = json_object_object_get(jsonToParse, "hourOrDay");
   deviceID = json_object_object_get(jsonToParse, "deviceID");
+  parameterFromJson = json_object_object_get(jsonToParse, "chosenParameter");
   tmp_requestDataStruct->hourOrDay = json_object_get_string(hourOrDay);
   tmp_requestDataStruct->deviceID = json_object_get_string(deviceID);
+  tmp_requestDataStruct->chosenParameter = json_object_get_int(parameterFromJson);
 
   if(strcmp(tmp_requestDataStruct->hourOrDay, HOUR) == 0){
 
