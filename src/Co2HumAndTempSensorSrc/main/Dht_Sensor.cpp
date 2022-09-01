@@ -1,11 +1,4 @@
-#include <DHT.h>
-
-#define DHTTYPE DHT22
-#define DHTPIN1 3  // pin dht 
-
-DHT dht(DHTPIN1, DHTTYPE);
-
-void controlloTemp(float *hum, float *temp);
+#include "Dht_Sensor.h"
 
 void controlloTemp(float *hum, float *temp){
   *hum = dht.readHumidity();
@@ -14,7 +7,7 @@ void controlloTemp(float *hum, float *temp){
   
   *temp = dht.readTemperature(); // Read temperature as Celsius (the default)
   
-  //client.publish("your-topic", *temp);
+  //client.publish("your-topic", *temp);  //da togliere
   //delay(100);
   //client.publish("your-topic", *hum);
 }

@@ -1,24 +1,6 @@
-#include <WiFi.h>
-#include <PubSubClient.h>
+#include"Net.h"
 
-WiFiClient espClient;
-PubSubClient client(espClient);
-
-const char* ssid     = "your-ssid";
-const char* password = "your-password";
-
-const char* mqtt_server = "cow.mq2.cloudamqp.com";
-const char* mqtt_us = "your-server-ssid";
-const char* mqtt_pass = "your-server-password";
-const char* mqtt_id = "your-server-id";
-const int   mqtt_port = 1883;
-
-void wifi();
-void callback(char* topic, byte* payload, unsigned int length);
-void reconnect();
-
-void wifi(){
-    Serial.begin(115200);
+void wifi(const char *ssid, const char *password){
     delay(10);
 
     // We start by connecting to a WiFi network
@@ -48,11 +30,9 @@ void callback(char* topic, byte* payload, unsigned int length) {
   for (int i = 0; i < length; i++) {
     Serial.print((char)payload[i]);
   }
-  Serial.println();
-  
 }
 
-void reconnect() {
+void reconnect(const char *mqtt_id, const char *mqtt_us, const char *mqtt_pass) {
   // Loop until we're reconnected
   while (!client.connected()) {
     Serial.print("Attempting MQTT connection...");

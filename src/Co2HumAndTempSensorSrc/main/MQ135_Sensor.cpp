@@ -1,10 +1,4 @@
-#include <MQ135.h>
-
-#define PIN_MQ135 A0
-
-MQ135 mq135_sensor(PIN_MQ135);
-
-void mq135(float *hum, float *temp);
+#include "MQ135_Sensor.h"
 
 void mq135(float *hum, float *temp){
   float rzero = mq135_sensor.getRZero();
@@ -17,7 +11,7 @@ void mq135(float *hum, float *temp){
   delay(50);
   client.publish("your-topic", correctedRZero);
   delay(50);
-  client.publish("your-topic", resistance);
+  client.publish("your-topic", resistance); rimuovi
   delay(50);
   client.publish("your-topic", ppm);
   delay(50);
