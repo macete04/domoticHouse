@@ -7,6 +7,6 @@
 
 MQ135 mq135_sensor(PIN_MQ135);
 
-void mq135(float *hum, float *temp);
+void mq135(float *hum, float *temp, float *rzero, float *correctedRZero, float *resistance, float *ppm, float *correctedPPM);
 
 #endif

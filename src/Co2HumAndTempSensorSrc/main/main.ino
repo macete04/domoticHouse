@@ -1,6 +1,7 @@
 #include "Net.h"
 #include "Dht_Sensor.h"
 #include "MQ135_Sensor.h"
+#include "json.h"
 
 const char* ssid     = "your-ssid";
 const char* password = "your-password";
@@ -26,8 +27,15 @@ void loop() {
 
   float temp;
   float hum;
+  float rzero;
+  float correctedRZero;
+  float resistance;
+  float ppm;
+  float correctedPPM;
 
   controlloTemp(&hum, &temp);
-  mq135(&hum, &temp);
-  
+  mq135(&hum, &temp, &rzero, &correctedRZero, &resistance, &ppm, &correctedPPM);
+  json(&hum, &temp, &rzero, &correctedRZero, &resistance, &ppm, &correctedPPM);
+
+  //client.publish("your-topic", doc);
 }
